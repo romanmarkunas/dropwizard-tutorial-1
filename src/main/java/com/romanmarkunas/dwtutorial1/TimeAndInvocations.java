@@ -1,5 +1,10 @@
 package com.romanmarkunas.dwtutorial1;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+
 import java.time.LocalTime;
 
 public class TimeAndInvocations {
@@ -13,6 +18,9 @@ public class TimeAndInvocations {
     }
 
     @JsonProperty
+    // annotations are added later after bad deserialization of date
+    @JsonSerialize(using = LocalTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "hh:mm:ss")
     public LocalTime getTime() {
         return time;
     }
