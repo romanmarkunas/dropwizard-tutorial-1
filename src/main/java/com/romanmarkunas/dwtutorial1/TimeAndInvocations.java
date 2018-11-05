@@ -18,7 +18,6 @@ public class TimeAndInvocations {
     }
 
     @JsonProperty
-    // annotations are added later after bad deserialization of date
     @JsonSerialize(using = LocalTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "hh:mm:ss")
     public LocalTime getTime() {

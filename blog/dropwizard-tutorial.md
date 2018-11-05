@@ -106,15 +106,73 @@ The following paths were found for the configured resources: NONE
 ```
 
 this means we don't have any endpoints defined yet. So currently we have a 
-full-fledged server running with no reason. Let's fix that!
+full-fledged server running for no reason. Let's fix that!
 
 ## Defining endpoint
 
+For training purposes we will an endpoint that will return current server time 
+and how many times this endpoint is invoked. Since Java methods can only return 
+1 value, we will need to create a POJO with these 2:
 
+```java
+public class TimeAndInvocations {
 
-## Other configuration
+    // fields and constructor omitted
+    
+    @JsonProperty
+    public LocalTime getTime() {
+        return time;
+    }
+
+    @JsonProperty
+    public int getCurrentInvocations() {
+        return currentInvocations;
+    }
+}
+```
+
+Now let's define endpoint itself:
+
+```java
+@Path("/time")
+@Produces(MediaType.APPLICATION_JSON)
+public class TimeResource {
+
+    private final AtomicInteger invocations = new AtomicInteger(0);
+
+    @GET
+    public TimeAndInvocations getTimeAndInvocations() {
+        int invocation = this.invocations.incrementAndGet();
+        return new TimeAndInvocations(LocalTime.now(), invocation);
+    }
+}
+```
+
+This defines _GET /time_ endpoint that returns JSON-formatted time and invocation 
+count. All these annotations that allows to represent endpoint as java object 
+come from /*TODO*/ JAX- some standard and are implemented by Jersey.
+
+However before we can hit our endpoint, we must let Dropwizard/Jersey know about 
+it in HelloApplication class:
+ 
+ ```java
+@Override
+public void run(Configuration configuration, Environment environment) {
+    environment.jersey().register(new TimeResource());
+}
+```
+
+That's it! Routing of incoming requests into Jersey environment is already done 
+by Dropwizard and launching our app again confirms that:
+
+```
+The following paths were found for the configured resources:
+  GET /time (com.romanmarkunas.dwtutorial1.TimeResource)```
+```
 
 ## Deserialization configuration
+
+## Packaging
 
 ## Instead of conclusion
 
