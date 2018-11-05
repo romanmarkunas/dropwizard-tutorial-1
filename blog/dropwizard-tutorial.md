@@ -172,7 +172,54 @@ The following paths were found for the configured resources:
 
 ## Deserialization configuration
 
+Let's look what our endpoint returns:
+
+```json
+{
+    "time": [
+        9,
+        4,
+        51,
+        367000000
+    ],
+    "currentInvocations": 1
+}
+```
+
+Jackson is the library that converts our TimeAndInvocations objects into JSON 
+string. As you can see by default it uses field-by-field serialization. This 
+means that Jackson goes through nested objects and takes their fields to add to 
+JSON object. This is fine for invocation count, but not for our time, that is 
+currently represented by hour, minute, second and nanosecond fields.
+
+Let's fix this:
+
+```java
+@JsonProperty
+@JsonSerialize(using = LocalTimeSerializer.class)
+@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "hh:mm:ss")
+public LocalTime getTime() {
+    return time;
+}
+```
+
+which results in output:
+
+```json
+{
+    "time": "09:45:15",
+    "currentInvocations": 1
+}
+```
+
+Here we added another Jackson annotation which hints serializer how it should 
+form a string representation of that object. Jackson comes with plenty of 
+serializers for Java library classes and other serializers can be registered 
+into Jackson environment, similarly how we didi it with TimeResource. 
+
 ## Packaging
+
+
 
 ## Instead of conclusion
 
