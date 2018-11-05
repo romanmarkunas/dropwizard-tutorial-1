@@ -41,6 +41,9 @@ public class HelloApplication extends Application<Configuration> {
     public static void main(String[] args) throws Exception {
         new HelloApplication().run(args);
     }
+    
+    @Override
+    public void run(Configuration configuration, Environment environment) {}
 }
 ```
 
@@ -79,10 +82,35 @@ implementation class that will need to be deserialized from this configuration.
 ## Running
 
 So once we have application class and configuration in place we can run our app! 
+Let's assume for now that we will run it from IDE as we'll talk a bit more about 
+packaging later. 
+
+To run app main method:
+```
+java ApplicationClass server path/to/config.yaml
+```
+
+If you follow supplied code this will result in:
+```
+java com.romanmarkunas.dwtutorial1.HelloApplication server config/config.yml
+```
+
+The successful launch will manifest with:
+```
+org.eclipse.jetty.server.Server: Started @3908ms
+```
+
+However scrolling up we can also see:
+```
+The following paths were found for the configured resources: NONE
+```
+
+this means we don't have any endpoints defined yet. So currently we have a 
+full-fledged server running with no reason. Let's fix that!
 
 ## Defining endpoint
 
-Now let's try to do something useful with our application.
+
 
 ## Other configuration
 

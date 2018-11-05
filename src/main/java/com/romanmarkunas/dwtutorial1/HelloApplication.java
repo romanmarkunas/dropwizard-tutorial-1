@@ -12,6 +12,6 @@ public class HelloApplication extends Application<Configuration> {
 
     @Override
     public void run(Configuration configuration, Environment environment) {
-        environment.jersey().register(new TimeResource());
+//        environment.jersey().register(new TimeResource());
     }
 }
