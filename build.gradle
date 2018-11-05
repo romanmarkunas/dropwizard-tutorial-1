@@ -4,14 +4,12 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.1'
     }
 }
 
-plugins {
-    id 'java'
-    id 'application'
-}
+apply plugin: 'java'
+apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 ext {
@@ -35,13 +33,11 @@ dependencies {
     testCompile "io.dropwizard:dropwizard-testing:$vDropwizard"
 }
 
-mainClassName = 'com.romanmarkunas.dwtutorial1.HelloApplication'
-
 jar {
 //    from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     manifest {
         attributes(
-                'Main-Class': "$mainClassName"
+                'Main-Class': "com.romanmarkunas.dwtutorial1.HelloApplication"
         )
     }
 }
