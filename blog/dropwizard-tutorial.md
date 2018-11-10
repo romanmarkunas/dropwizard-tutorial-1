@@ -187,10 +187,7 @@ Let's look what our endpoint returns:
 ```
 
 Jackson is the library that converts our TimeAndInvocations objects into JSON 
-string. As you can see by default it uses field-by-field serialization. This 
-means that Jackson goes through nested objects and takes their fields to add to 
-JSON object. This is fine for invocation count, but not for our time, that is 
-currently represented by hour, minute, second and nanosecond fields.
+string. As you can see by default LocalTime serializer just prints fields. 
 
 Let's fix this:
 
@@ -208,18 +205,92 @@ which results in output:
 ```json
 {
     "time": "09:45:15",
-    "currentInvocations": 1
+    "currentInvocations": 3
 }
 ```
 
 Here we added another Jackson annotation which hints serializer how it should 
 form a string representation of that object. Jackson comes with plenty of 
 serializers for Java library classes and other serializers can be registered 
-into Jackson environment, similarly how we didi it with TimeResource. 
+into Jackson environment, similarly how we didi it with TimeResource. Otherwise, 
+if Jackson doe not find specific serializer for and objects it works with, it 
+will default to aforementioned field-by-field serialization. 
 
 ## Packaging
 
+As mentioned before, Dropwizard promotes single JAR packaging. To make a single 
+JAR we need to instruct build tool to put all depended upon classes into JAR 
+file. Unfortunately we cannot use:
 
+```groovy
+from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+```
+
+here, because that would only leave one (last) SPI resource file, in case there 
+are few with the same name. Fortunately there is ready plugin available that 
+zips files but also collates SPI configuration resources. To apply plugin, put:
+
+```groovy
+apply plugin: 'com.github.johnrengelman.shadow'
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': "com.romanmarkunas.dwtutorial1.HelloApplication"
+        )
+    }
+}
+
+shadowJar {
+    mergeServiceFiles()
+}
+``` 
+
+into _build.gradle_. This will add _shadowJar_ task, that can be invoked:
+
+```
+./gradlew shadowJar
+```
+
+to create single fat JAR. Note, that while _shadowJar_ task reuses configuration 
+from _jar_ task, _jar_ task behavior will not be altered with plugin. 
+
+There is important caveat for Windows users however. This plugin adds _\n_ to 
+the end of line when collating SPI files. This means that this fat JAR, when run 
+on Windows will not be able to correctly read SPI configuration line-by-line. 
+To avoid this, we must use custom service file transformer to collate:
+
+```groovy
+import com.github.jengelman.gradle.plugins.shadow.relocation.Relocator
+import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
+
+class SFTExt extends ServiceFileTransformer {
+
+    @Override
+    void transform(String path, InputStream is, List<Relocator> relocators) {
+        def lines = is.readLines();
+        relocators.each {rel ->
+            if(rel.canRelocateClass(new File(path).name)) {
+                path = rel.relocateClass(path)
+            }
+            lines.eachWithIndex { String line, int i ->
+                if(rel.canRelocateClass(line)) {
+                    lines[i] = rel.relocateClass(line)
+                }
+            }
+        }
+        lines.each {line -> serviceEntries[path]
+                .append(new ByteArrayInputStream((line + "\r\n").getBytes()))}
+    }
+}
+
+shadowJar {
+//    mergeServiceFiles() - should not be used, as it uses default transformer
+    transform(SFTExt.class)
+}
+```
+
+// TODO - this note on Windows should be separate article
 
 ## Instead of conclusion
 
