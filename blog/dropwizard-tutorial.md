@@ -220,77 +220,7 @@ will default to aforementioned field-by-field serialization.
 
 As mentioned before, Dropwizard promotes single JAR packaging. To make a single 
 JAR we need to instruct build tool to put all depended upon classes into JAR 
-file. Unfortunately we cannot use:
-
-```groovy
-from {configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-```
-
-here, because that would only leave one (last) SPI resource file, in case there 
-are few with the same name. Fortunately there is ready plugin available that 
-zips files but also collates SPI configuration resources. To apply plugin, put:
-
-```groovy
-apply plugin: 'com.github.johnrengelman.shadow'
-
-jar {
-    manifest {
-        attributes(
-                'Main-Class': "com.romanmarkunas.dwtutorial1.HelloApplication"
-        )
-    }
-}
-
-shadowJar {
-    mergeServiceFiles()
-}
-``` 
-
-into _build.gradle_. This will add _shadowJar_ task, that can be invoked:
-
-```
-./gradlew shadowJar
-```
-
-to create single fat JAR. Note, that while _shadowJar_ task reuses configuration 
-from _jar_ task, _jar_ task behavior will not be altered with plugin. 
-
-There is important caveat for Windows users however. This plugin adds _\n_ to 
-the end of line when collating SPI files. This means that this fat JAR, when run 
-on Windows will not be able to correctly read SPI configuration line-by-line. 
-To avoid this, we must use custom service file transformer to collate:
-
-```groovy
-import com.github.jengelman.gradle.plugins.shadow.relocation.Relocator
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-
-class SFTExt extends ServiceFileTransformer {
-
-    @Override
-    void transform(String path, InputStream is, List<Relocator> relocators) {
-        def lines = is.readLines();
-        relocators.each {rel ->
-            if(rel.canRelocateClass(new File(path).name)) {
-                path = rel.relocateClass(path)
-            }
-            lines.eachWithIndex { String line, int i ->
-                if(rel.canRelocateClass(line)) {
-                    lines[i] = rel.relocateClass(line)
-                }
-            }
-        }
-        lines.each {line -> serviceEntries[path]
-                .append(new ByteArrayInputStream((line + "\r\n").getBytes()))}
-    }
-}
-
-shadowJar {
-//    mergeServiceFiles() - should not be used, as it uses default transformer
-    transform(SFTExt.class)
-}
-```
-
-// TODO - this note on Windows should be separate article
+file. I have covered this in [separate tutorial before](TODO link).
 
 ## Instead of conclusion
 
