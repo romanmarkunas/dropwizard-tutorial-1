@@ -8,13 +8,13 @@ everything at hand to develop full-featured Java-based RESTful web-applications.
 This tutorial will go through core Dropwizard components and how they are 
 assembled together to have working Dropwizard application.
 
-Ready sample application can be found [here](TODO link to repo).
+Ready sample application can be found [here](https://github.com/romanmarkunas/dropwizard-tutorial-1).
 
 ## Pulling necessary dependencies
 
 For this section I'll be using Gradle as dependency manager, since 
-[Dropwizard website](TODO link to their getting started) already has examples 
-using Maven.
+[Dropwizard website](https://www.dropwizard.io/1.3.5/docs/getting-started.html) 
+already has examples using Maven.
 
 For simple app we need only one dependency + junit for unit tests:
 
@@ -150,7 +150,7 @@ public class TimeResource {
 
 This defines _GET /time_ endpoint that returns JSON-formatted time and invocation 
 count. All these annotations that allows to represent endpoint as java object 
-come from /*TODO*/ JAX- some standard and are implemented by Jersey.
+come from JAX-RS (JSR 311 & JSR 339) and are implemented by Jersey.
 
 However before we can hit our endpoint, we must let Dropwizard/Jersey know about 
 it in HelloApplication class:
@@ -220,7 +220,7 @@ will default to aforementioned field-by-field serialization.
 
 As mentioned before, Dropwizard promotes single JAR packaging. To make a single 
 JAR we need to instruct build tool to put all depended upon classes into JAR 
-file. I have covered this in [separate tutorial before](TODO link).
+file. I have covered this in [separate tutorial before](http://romanmarkunas.com/web/blog/creating-fat-jars-with-gradle/).
 
 ## Instead of conclusion
 
